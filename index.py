@@ -1,26 +1,14 @@
-trackPoints = open('trajectory.csv', 'r')
-timeStamps = open('photo_timestamps.txt', 'r')
-output = open('points.txt', 'w')
+from config import TELEMETRY, TIMESTAMPS, TRAJECTORY, OUTPUT
+from fileToArray import fileToArray
+from interpolation import interpolation
 
-def fileToArray(file, start, end):
-    trackPointsArray = []
-    for line in file:
-        point = []
-        for prop in line[start:len(line)-end].split(','):
-            point.append(prop)
-        trackPointsArray.append(point)
-    return trackPointsArray
+trackPoints = open(TRAJECTORY, 'r')
+timeStamps = open(TIMESTAMPS, 'r')
+telemetry = open(TELEMETRY, 'r')
+output = open(OUTPUT, 'w')
 
-def interpol(prevVal, nextVal, prevTime, nextTime, photoTime):
-    deltaLat = nextVal - prevVal
-    deltaTime = nextTime - prevTime
-    deltaTimeX = photoTime - prevTime
-    deltaLatX = deltaLat * deltaTimeX / deltaTime
-    photoLat = prevVal + deltaLatX
-    return photoLat
-
-trackPointsArray = fileToArray(trackPoints, 0, 2)
-timeStampsArray = fileToArray(timeStamps, 10, 7)
+trackPointsArray = fileToArray(trackPoints, 0, 2, ',')
+timeStampsArray = fileToArray(timeStamps, 10, 7, ' ')
 trackPointsArrayModified = []
 
 for line in trackPointsArray:
@@ -69,9 +57,9 @@ for time in timeStampsArraySec:
     photoPoint = []
     while time > trackPointsArraySec[j][4] and j < len(trackPointsArraySec) - 1:
         j += 1
-    lat = interpol(trackPointsArraySec[j - 1][1], trackPointsArraySec[j][1], trackPointsArraySec[j - 1][4], trackPointsArraySec[j][4], time)
-    lon = interpol(trackPointsArraySec[j - 1][2], trackPointsArraySec[j][2], trackPointsArraySec[j - 1][4], trackPointsArraySec[j][4], time)
-    elev = interpol(trackPointsArraySec[j - 1][3], trackPointsArraySec[j][3], trackPointsArraySec[j - 1][4], trackPointsArraySec[j][4], time)
+    lat = interpolation(trackPointsArraySec[j - 1][1], trackPointsArraySec[j][1], trackPointsArraySec[j - 1][4], trackPointsArraySec[j][4], time)
+    lon = interpolation(trackPointsArraySec[j - 1][2], trackPointsArraySec[j][2], trackPointsArraySec[j - 1][4], trackPointsArraySec[j][4], time)
+    elev = interpolation(trackPointsArraySec[j - 1][3], trackPointsArraySec[j][3], trackPointsArraySec[j - 1][4], trackPointsArraySec[j][4], time)
     photoPoint.append(lat)
     photoPoint.append(lon)
     photoPoint.append(elev)
@@ -86,7 +74,3 @@ for point in interpolatedPoints:
     count += 1
 
 output.close()
-
-#89275672501
-#89171822306
-# @E?9TcTQ
